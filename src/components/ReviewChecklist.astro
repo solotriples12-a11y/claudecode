@@ -1,0 +1,40 @@
+---
+interface Props {
+  items: string[];
+  title?: string;
+  id?: string;
+}
+
+const { items, title = 'Antes de entregar al cliente', id = 'review-checklist' } = Astro.props;
+---
+
+<section
+  class="rounded border border-amber-200 bg-amber-50/60 p-4"
+  aria-labelledby={`${id}-title`}
+>
+  <h2 id={`${id}-title`} class="text-sm font-semibold uppercase tracking-wide text-amber-900 mb-3">
+    {title}
+  </h2>
+  <ul class="space-y-2">
+    {
+      items.map((item, i) => {
+        const itemId = `${id}-item-${i}`;
+        return (
+          <li class="flex items-start gap-2.5">
+            <input
+              id={itemId}
+              type="checkbox"
+              class="mt-1 h-4 w-4 rounded border-ink-300 text-accent focus:ring-accent"
+            />
+            <label for={itemId} class="text-sm leading-relaxed text-ink-800 cursor-pointer select-none min-h-[44px] flex items-start">
+              {item}
+            </label>
+          </li>
+        );
+      })
+    }
+  </ul>
+  <p class="mt-3 text-xs text-amber-900/80">
+    Estos checks son orientativos y no se guardan; sirven de recordatorio antes de compartir el resultado.
+  </p>
+</section>

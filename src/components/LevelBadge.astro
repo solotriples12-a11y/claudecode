@@ -1,0 +1,21 @@
+---
+import { LEVEL_LABELS, type Level } from '../lib/categories';
+
+interface Props {
+  level: Level | string;
+}
+
+const { level } = Astro.props;
+const label = LEVEL_LABELS[level as Level] ?? level;
+
+const colorByLevel: Record<string, string> = {
+  basico: 'border-emerald-200 bg-emerald-50 text-emerald-800',
+  intermedio: 'border-amber-200 bg-amber-50 text-amber-800',
+  avanzado: 'border-rose-200 bg-rose-50 text-rose-800',
+};
+const classes = colorByLevel[level] ?? 'border-ink-200 bg-ink-50 text-ink-700';
+---
+
+<span class:list={['inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium', classes]}>
+  {label}
+</span>

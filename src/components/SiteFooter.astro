@@ -1,0 +1,16 @@
+---
+import { url } from '../lib/paths';
+
+const year = new Date().getFullYear();
+---
+
+<footer class="border-t border-ink-200 bg-ink-50 mt-10">
+  <div class="mx-auto max-w-6xl px-4 sm:px-6 py-6 text-sm text-ink-600 flex flex-col sm:flex-row gap-2 sm:items-center sm:justify-between">
+    <p>
+      PromptHub · Herramienta interna · {year}
+    </p>
+    <p>
+      <a href={url('categorias/')} class="text-ink-700 hover:text-ink-900">Explorar categorías</a>
+    </p>
+  </div>
+</footer>
