@@ -82,8 +82,11 @@ import { CATEGORIES, LEVELS, LEVEL_LABELS } from '../lib/categories';
     throw new Error('SearchBox: missing DOM nodes');
   }
 
+  const BASE = import.meta.env.BASE_URL;
+  const baseNormalized = BASE.endsWith('/') ? BASE : `${BASE}/`;
+
   async function loadDocs(): Promise<SearchDoc[]> {
-    const res = await fetch('/search-index.json');
+    const res = await fetch(`${baseNormalized}search-index.json`);
     if (!res.ok) throw new Error('No se pudo cargar el índice de búsqueda');
     return res.json();
   }
@@ -112,7 +115,7 @@ import { CATEGORIES, LEVELS, LEVEL_LABELS } from '../lib/categories';
           <span class="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium ${lvl}">${escapeHtml(LEVEL_LABELS[doc.level as Level] ?? doc.level)}</span>
         </div>
         <h3 class="text-lg font-semibold leading-snug mb-1.5">
-          <a href="/prompts/${encodeURIComponent(doc.slug)}/" class="text-ink-900 no-underline group-hover:underline underline-offset-2">${escapeHtml(doc.title)}</a>
+          <a href="${baseNormalized}prompts/${encodeURIComponent(doc.slug)}/" class="text-ink-900 no-underline group-hover:underline underline-offset-2">${escapeHtml(doc.title)}</a>
         </h3>
         <p class="text-sm text-ink-600 leading-relaxed">${escapeHtml(doc.summary)}</p>
       </article>

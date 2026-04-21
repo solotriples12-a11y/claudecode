@@ -6,6 +6,7 @@ import LevelBadge from '../../components/LevelBadge.astro';
 import CopyButton from '../../components/CopyButton.astro';
 import ReviewChecklist from '../../components/ReviewChecklist.astro';
 import { getCategoryLabel } from '../../lib/categories';
+import { url } from '../../lib/paths';
 
 export async function getStaticPaths() {
   const prompts = await getCollection('prompts');
@@ -31,16 +32,16 @@ const copyText = body.trim();
 
 <BaseLayout title={data.title} description={data.summary}>
   <nav class="mb-4 text-sm" aria-label="Migas de pan">
-    <a href="/" class="text-ink-600 hover:text-ink-900">Inicio</a>
+    <a href={url()} class="text-ink-600 hover:text-ink-900">Inicio</a>
     <span class="text-ink-400 mx-1.5" aria-hidden="true">/</span>
-    <a href={`/categorias/${data.category}/`} class="text-ink-600 hover:text-ink-900">{categoryLabel}</a>
+    <a href={url(`categorias/${data.category}/`)} class="text-ink-600 hover:text-ink-900">{categoryLabel}</a>
     <span class="text-ink-400 mx-1.5" aria-hidden="true">/</span>
     <span class="text-ink-800">{data.title}</span>
   </nav>
 
   <header class="mb-5">
     <div class="flex flex-wrap items-center gap-2 mb-2">
-      <CategoryBadge slug={data.category} href={`/categorias/${data.category}/`} />
+      <CategoryBadge slug={data.category} href={url(`categorias/${data.category}/`)} />
       <LevelBadge level={data.level} />
     </div>
     <h1 class="text-3xl sm:text-4xl font-bold text-ink-900 leading-tight mb-2">{data.title}</h1>

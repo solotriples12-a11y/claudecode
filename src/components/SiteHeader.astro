@@ -1,12 +1,17 @@
 ---
+import { url } from '../lib/paths';
+
+const home = url();
+const categorias = url('categorias/');
 const currentPath = Astro.url.pathname;
-const isActive = (href: string) => currentPath === href || (href !== '/' && currentPath.startsWith(href));
+const isHome = currentPath === home || currentPath === home.replace(/\/$/, '');
+const isCategorias = currentPath.startsWith(categorias.replace(/\/$/, ''));
 ---
 
 <header class="border-b border-ink-200 bg-white">
   <div class="mx-auto max-w-6xl px-4 sm:px-6 py-3 flex items-center justify-between gap-4">
     <a
-      href="/"
+      href={home}
       class="flex items-center gap-2 no-underline text-ink-900 hover:text-ink-900"
       aria-label="PromptHub, ir al inicio"
     >
@@ -20,22 +25,22 @@ const isActive = (href: string) => currentPath === href || (href !== '/' && curr
     </a>
     <nav aria-label="Principal" class="flex items-center gap-1 sm:gap-3 text-sm">
       <a
-        href="/"
+        href={home}
         class:list={[
           'px-2 py-1 rounded no-underline',
-          isActive('/') && currentPath === '/' ? 'text-ink-900 font-medium' : 'text-ink-600 hover:text-ink-900',
+          isHome ? 'text-ink-900 font-medium' : 'text-ink-600 hover:text-ink-900',
         ]}
-        aria-current={currentPath === '/' ? 'page' : undefined}
+        aria-current={isHome ? 'page' : undefined}
       >
         Inicio
       </a>
       <a
-        href="/categorias/"
+        href={categorias}
         class:list={[
           'px-2 py-1 rounded no-underline',
-          isActive('/categorias') ? 'text-ink-900 font-medium' : 'text-ink-600 hover:text-ink-900',
+          isCategorias ? 'text-ink-900 font-medium' : 'text-ink-600 hover:text-ink-900',
         ]}
-        aria-current={isActive('/categorias') ? 'page' : undefined}
+        aria-current={isCategorias ? 'page' : undefined}
       >
         Categorías
       </a>

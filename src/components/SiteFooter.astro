@@ -1,4 +1,6 @@
 ---
+import { url } from '../lib/paths';
+
 const year = new Date().getFullYear();
 ---
 
@@ -8,7 +10,7 @@ const year = new Date().getFullYear();
       PromptHub · Herramienta interna · {year}
     </p>
     <p>
-      <a href="/categorias/" class="text-ink-700 hover:text-ink-900">Explorar categorías</a>
+      <a href={url('categorias/')} class="text-ink-700 hover:text-ink-900">Explorar categorías</a>
     </p>
   </div>
 </footer>

@@ -1,6 +1,7 @@
 ---
 import CategoryBadge from './CategoryBadge.astro';
 import LevelBadge from './LevelBadge.astro';
+import { url } from '../lib/paths';
 
 interface Props {
   slug: string;
@@ -21,7 +22,7 @@ const { slug, title, summary, category, level, tags = [] } = Astro.props;
   </div>
   <h3 class="text-lg font-semibold leading-snug mb-1.5">
     <a
-      href={`/prompts/${slug}/`}
+      href={url(`prompts/${slug}/`)}
       class="text-ink-900 no-underline group-hover:underline underline-offset-2"
     >
       {title}

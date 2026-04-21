@@ -35,7 +35,9 @@ npm install
 npm run dev
 ```
 
-La app queda disponible en <http://localhost:4321>.
+La app queda disponible en <http://localhost:4321/claudecode/>. El prefijo
+`/claudecode/` viene del `base` configurado para que Pages sirva el sitio
+bajo esa ruta; en local se comporta igual que en producción.
 
 Otros scripts útiles:
 
@@ -43,6 +45,34 @@ Otros scripts útiles:
 npm run build     # Genera sitio estático en dist/
 npm run preview   # Sirve el build localmente
 npm run check     # Type-check + validación de Content Collections
+```
+
+## Despliegue
+
+### GitHub Pages (automático)
+
+El workflow `.github/workflows/deploy.yml` publica la web en GitHub Pages en
+cada push a `main`.
+
+Setup por única vez en el repo:
+
+1. Entrar en **Settings → Pages**.
+2. En **Build and deployment**, seleccionar **Source: GitHub Actions**.
+3. Hacer merge de un PR a `main`. Al terminar el workflow, la URL estará en
+   `https://<owner>.github.io/claudecode/`.
+
+### Integración continua
+
+El workflow `.github/workflows/ci.yml` ejecuta `npm run check` y `npm run build`
+en cada pull request. Si el frontmatter de un prompt no cumple el schema Zod,
+el check falla y bloquea el merge.
+
+### Desplegar en otro destino
+
+El `site` y `base` se pueden sobrescribir vía variables de entorno:
+
+```bash
+SITE=https://prompthub.miempresa.com BASE=/ npm run build
 ```
 
 ## Cómo contribuir un prompt

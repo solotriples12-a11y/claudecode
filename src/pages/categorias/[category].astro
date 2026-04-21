@@ -3,6 +3,7 @@ import { getCollection } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import PromptCard from '../../components/PromptCard.astro';
 import { CATEGORIES, getCategory } from '../../lib/categories';
+import { url } from '../../lib/paths';
 
 export async function getStaticPaths() {
   return CATEGORIES.map((c) => ({ params: { category: c.slug } }));
@@ -20,7 +21,7 @@ const prompts = all
 
 <BaseLayout title={meta.label} description={meta.description}>
   <nav class="mb-4 text-sm" aria-label="Migas de pan">
-    <a href="/categorias/" class="text-ink-600 hover:text-ink-900">Categorías</a>
+    <a href={url('categorias/')} class="text-ink-600 hover:text-ink-900">Categorías</a>
     <span class="text-ink-400 mx-1.5" aria-hidden="true">/</span>
     <span class="text-ink-800">{meta.label}</span>
   </nav>
