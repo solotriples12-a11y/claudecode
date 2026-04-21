@@ -1,0 +1,58 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: light;
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    @apply bg-white text-ink-800 font-sans antialiased;
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply text-ink-900;
+    text-wrap: balance;
+  }
+
+  a {
+    @apply text-accent hover:text-accent-hover underline-offset-2;
+  }
+
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-accent;
+    outline-style: solid;
+  }
+
+  /* Skip link: accessible by keyboard, hidden until focused */
+  .skip-link {
+    @apply absolute left-2 top-2 -translate-y-20 rounded bg-ink-900 px-3 py-2 text-white transition-transform;
+  }
+  .skip-link:focus {
+    @apply translate-y-0;
+  }
+}
+
+@layer components {
+  .prose-prompt p {
+    @apply my-3 leading-relaxed;
+  }
+  .prose-prompt ul {
+    @apply my-3 list-disc pl-6;
+  }
+  .prose-prompt ol {
+    @apply my-3 list-decimal pl-6;
+  }
+  .prose-prompt code {
+    @apply rounded bg-ink-100 px-1 py-0.5 font-mono text-sm;
+  }
+  .prose-prompt pre {
+    @apply my-4 overflow-x-auto rounded border border-ink-200 bg-ink-50 p-3 text-sm;
+  }
+}

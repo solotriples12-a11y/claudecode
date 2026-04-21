@@ -1,0 +1,56 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PromptCard from '../../components/PromptCard.astro';
+import { CATEGORIES, getCategory } from '../../lib/categories';
+
+export async function getStaticPaths() {
+  return CATEGORIES.map((c) => ({ params: { category: c.slug } }));
+}
+
+const { category } = Astro.params;
+const meta = getCategory(category as string);
+if (!meta) throw new Error(`Categoría desconocida: ${category}`);
+
+const all = await getCollection('prompts');
+const prompts = all
+  .filter((p) => p.data.category === category)
+  .sort((a, b) => b.data.reviewedAt.getTime() - a.data.reviewedAt.getTime());
+---
+
+<BaseLayout title={meta.label} description={meta.description}>
+  <nav class="mb-4 text-sm" aria-label="Migas de pan">
+    <a href="/categorias/" class="text-ink-600 hover:text-ink-900">Categorías</a>
+    <span class="text-ink-400 mx-1.5" aria-hidden="true">/</span>
+    <span class="text-ink-800">{meta.label}</span>
+  </nav>
+
+  <header class="mb-6">
+    <h1 class="text-3xl font-bold text-ink-900 mb-2">{meta.label}</h1>
+    <p class="text-ink-600 max-w-prose">{meta.description}</p>
+  </header>
+
+  {
+    prompts.length === 0 ? (
+      <p class="rounded border border-dashed border-ink-300 bg-ink-50 p-6 text-ink-600">
+        Aún no hay prompts en esta categoría. Si quieres contribuir uno, revisa{' '}
+        <a href="https://github.com/" class="underline">CONTRIBUTING.md</a>.
+      </p>
+    ) : (
+      <ul class="grid gap-3 sm:grid-cols-2">
+        {prompts.map((p) => (
+          <li>
+            <PromptCard
+              slug={p.slug}
+              title={p.data.title}
+              summary={p.data.summary}
+              category={p.data.category}
+              level={p.data.level}
+              tags={p.data.tags}
+            />
+          </li>
+        ))}
+      </ul>
+    )
+  }
+</BaseLayout>

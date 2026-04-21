@@ -1,0 +1,85 @@
+---
+interface Props {
+  /** Texto a copiar al portapapeles. */
+  text: string;
+  /** Slug del prompt, usado para telemetría. */
+  slug: string;
+  /** Etiqueta visible del botón. */
+  label?: string;
+}
+
+const { text, slug, label = 'Copiar prompt' } = Astro.props;
+---
+
+<div class="copy-button-wrapper">
+  <button
+    type="button"
+    class="copy-button inline-flex w-full items-center justify-center gap-2 rounded bg-accent px-4 py-3 text-base font-medium text-white no-underline hover:bg-accent-hover focus-visible:outline-offset-4 transition-colors"
+    data-slug={slug}
+    aria-label={`${label}: copia el texto completo al portapapeles`}
+  >
+    <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+    </svg>
+    <span class="copy-button-label">{label}</span>
+  </button>
+  <p class="copy-button-status mt-2 text-sm text-ink-600" aria-live="polite" role="status"></p>
+  <textarea class="copy-button-source sr-only" aria-hidden="true" tabindex="-1" readonly>{text}</textarea>
+</div>
+
+<script>
+  import { trackEvent } from '../lib/analytics';
+
+  function init(root: HTMLElement) {
+    const button = root.querySelector<HTMLButtonElement>('.copy-button');
+    const source = root.querySelector<HTMLTextAreaElement>('.copy-button-source');
+    const status = root.querySelector<HTMLElement>('.copy-button-status');
+    const label = root.querySelector<HTMLElement>('.copy-button-label');
+    if (!button || !source || !status || !label) return;
+
+    const originalLabel = label.textContent ?? 'Copiar prompt';
+    const slug = button.dataset.slug ?? '';
+
+    button.addEventListener('click', async () => {
+      const text = source.value;
+      try {
+        if (navigator.clipboard && window.isSecureContext) {
+          await navigator.clipboard.writeText(text);
+        } else {
+          source.classList.remove('sr-only');
+          source.select();
+          document.execCommand('copy');
+          source.classList.add('sr-only');
+        }
+        label.textContent = 'Copiado ✓';
+        status.textContent = 'Prompt copiado al portapapeles.';
+        trackEvent('prompt_copied', { slug });
+        window.setTimeout(() => {
+          label.textContent = originalLabel;
+          status.textContent = '';
+        }, 2000);
+      } catch (err) {
+        status.textContent = 'No se pudo copiar. Selecciona el texto manualmente.';
+        // eslint-disable-next-line no-console
+        console.error(err);
+      }
+    });
+  }
+
+  document.querySelectorAll<HTMLElement>('.copy-button-wrapper').forEach(init);
+</script>
+
+<style>
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+</style>

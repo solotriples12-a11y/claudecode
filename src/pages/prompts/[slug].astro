@@ -1,0 +1,146 @@
+---
+import { getCollection, getEntry } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import CategoryBadge from '../../components/CategoryBadge.astro';
+import LevelBadge from '../../components/LevelBadge.astro';
+import CopyButton from '../../components/CopyButton.astro';
+import ReviewChecklist from '../../components/ReviewChecklist.astro';
+import { getCategoryLabel } from '../../lib/categories';
+
+export async function getStaticPaths() {
+  const prompts = await getCollection('prompts');
+  return prompts.map((p) => ({ params: { slug: p.slug } }));
+}
+
+const { slug } = Astro.params;
+const entry = await getEntry('prompts', slug as string);
+if (!entry) throw new Error(`Prompt no encontrado: ${slug}`);
+
+const { data, body } = entry;
+const { Content } = await entry.render();
+
+const categoryLabel = getCategoryLabel(data.category);
+const reviewedAtFmt = new Intl.DateTimeFormat('es-ES', {
+  day: '2-digit',
+  month: 'long',
+  year: 'numeric',
+}).format(data.reviewedAt);
+
+const copyText = body.trim();
+---
+
+<BaseLayout title={data.title} description={data.summary}>
+  <nav class="mb-4 text-sm" aria-label="Migas de pan">
+    <a href="/" class="text-ink-600 hover:text-ink-900">Inicio</a>
+    <span class="text-ink-400 mx-1.5" aria-hidden="true">/</span>
+    <a href={`/categorias/${data.category}/`} class="text-ink-600 hover:text-ink-900">{categoryLabel}</a>
+    <span class="text-ink-400 mx-1.5" aria-hidden="true">/</span>
+    <span class="text-ink-800">{data.title}</span>
+  </nav>
+
+  <header class="mb-5">
+    <div class="flex flex-wrap items-center gap-2 mb-2">
+      <CategoryBadge slug={data.category} href={`/categorias/${data.category}/`} />
+      <LevelBadge level={data.level} />
+    </div>
+    <h1 class="text-3xl sm:text-4xl font-bold text-ink-900 leading-tight mb-2">{data.title}</h1>
+    <p class="text-ink-600 max-w-prose leading-relaxed">{data.summary}</p>
+  </header>
+
+  <div class="grid gap-6 lg:grid-cols-[1fr_320px]">
+    <!-- Bloque de acciones: en desktop va a la derecha sticky; en mobile aparece arriba. -->
+    <aside class="order-first lg:order-last" aria-label="Acciones del prompt">
+      <div class="lg:sticky lg:top-4 flex flex-col gap-4">
+        <CopyButton text={copyText} slug={entry.slug} />
+        <ReviewChecklist items={data.reviewChecklist} id={`checklist-${entry.slug}`} />
+      </div>
+    </aside>
+
+    <!-- Contenido principal -->
+    <div class="order-last lg:order-first min-w-0 space-y-8">
+      <section aria-labelledby="use-case-title">
+        <h2 id="use-case-title" class="text-xs font-semibold uppercase tracking-wider text-ink-500 mb-1">
+          Caso de uso
+        </h2>
+        <p class="text-ink-800">{data.useCase}</p>
+      </section>
+
+      <section aria-labelledby="suitable-title" class="grid gap-4 sm:grid-cols-2">
+        <div class="rounded border border-emerald-200 bg-emerald-50/50 p-4">
+          <h2 id="suitable-title" class="text-sm font-semibold text-emerald-900 mb-2 flex items-center gap-1.5">
+            <span aria-hidden="true">✓</span> Para qué sirve
+          </h2>
+          <ul class="space-y-1.5 text-sm text-ink-800 list-disc pl-5">
+            {data.suitableFor.map((s) => <li>{s}</li>)}
+          </ul>
+        </div>
+        <div class="rounded border border-rose-200 bg-rose-50/50 p-4">
+          <h2 class="text-sm font-semibold text-rose-900 mb-2 flex items-center gap-1.5">
+            <span aria-hidden="true">✗</span> Para qué NO sirve
+          </h2>
+          <ul class="space-y-1.5 text-sm text-ink-800 list-disc pl-5">
+            {data.notSuitableFor.map((s) => <li>{s}</li>)}
+          </ul>
+        </div>
+      </section>
+
+      <section aria-labelledby="prompt-title">
+        <h2 id="prompt-title" class="text-sm font-semibold uppercase tracking-wider text-ink-500 mb-2">
+          Texto del prompt
+        </h2>
+        <div class="prose-prompt max-w-none rounded border border-ink-200 bg-ink-50/70 p-4 text-[15px] leading-relaxed text-ink-900">
+          <Content />
+        </div>
+      </section>
+
+      <section aria-labelledby="example-input-title">
+        <h2 id="example-input-title" class="text-sm font-semibold uppercase tracking-wider text-ink-500 mb-2">
+          Ejemplo de input
+        </h2>
+        <pre class="rounded border border-ink-200 bg-white p-4 text-sm overflow-x-auto whitespace-pre-wrap break-words">{data.exampleInput}</pre>
+      </section>
+
+      <section aria-labelledby="example-output-title">
+        <h2 id="example-output-title" class="text-sm font-semibold uppercase tracking-wider text-ink-500 mb-2">
+          Ejemplo de output
+        </h2>
+        <pre class="rounded border border-ink-200 bg-white p-4 text-sm overflow-x-auto whitespace-pre-wrap break-words">{data.exampleOutput}</pre>
+      </section>
+
+      <section aria-labelledby="meta-title" class="rounded border border-ink-200 bg-white p-4 text-sm">
+        <h2 id="meta-title" class="text-xs font-semibold uppercase tracking-wider text-ink-500 mb-3">Metadatos</h2>
+        <dl class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2">
+          <div class="flex gap-2">
+            <dt class="text-ink-500 min-w-[7rem]">Autor:</dt>
+            <dd class="text-ink-800">{data.author}</dd>
+          </div>
+          <div class="flex gap-2">
+            <dt class="text-ink-500 min-w-[7rem]">Revisado:</dt>
+            <dd class="text-ink-800">{reviewedAtFmt}</dd>
+          </div>
+          {
+            data.recommendedModel && (
+              <div class="flex gap-2">
+                <dt class="text-ink-500 min-w-[7rem]">Modelo sugerido:</dt>
+                <dd class="text-ink-800">{data.recommendedModel}</dd>
+              </div>
+            )
+          }
+          <div class="flex gap-2">
+            <dt class="text-ink-500 min-w-[7rem]">Nivel:</dt>
+            <dd class="text-ink-800">{data.level}</dd>
+          </div>
+        </dl>
+        {
+          data.tags.length > 0 && (
+            <ul class="mt-3 flex flex-wrap gap-1.5 text-xs text-ink-600" aria-label="Etiquetas">
+              {data.tags.map((t) => (
+                <li class="rounded bg-ink-100 px-1.5 py-0.5">#{t}</li>
+              ))}
+            </ul>
+          )
+        }
+      </section>
+    </div>
+  </div>
+</BaseLayout>

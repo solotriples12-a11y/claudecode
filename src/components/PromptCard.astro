@@ -1,0 +1,40 @@
+---
+import CategoryBadge from './CategoryBadge.astro';
+import LevelBadge from './LevelBadge.astro';
+
+interface Props {
+  slug: string;
+  title: string;
+  summary: string;
+  category: string;
+  level: string;
+  tags?: string[];
+}
+
+const { slug, title, summary, category, level, tags = [] } = Astro.props;
+---
+
+<article class="group rounded border border-ink-200 bg-white p-4 hover:border-ink-400 transition-colors">
+  <div class="flex flex-wrap items-center gap-2 mb-2">
+    <CategoryBadge slug={category} />
+    <LevelBadge level={level} />
+  </div>
+  <h3 class="text-lg font-semibold leading-snug mb-1.5">
+    <a
+      href={`/prompts/${slug}/`}
+      class="text-ink-900 no-underline group-hover:underline underline-offset-2"
+    >
+      {title}
+    </a>
+  </h3>
+  <p class="text-sm text-ink-600 leading-relaxed">{summary}</p>
+  {
+    tags.length > 0 && (
+      <ul class="mt-3 flex flex-wrap gap-1.5 text-xs text-ink-500" aria-label="Etiquetas">
+        {tags.slice(0, 5).map((t) => (
+          <li>#{t}</li>
+        ))}
+      </ul>
+    )
+  }
+</article>

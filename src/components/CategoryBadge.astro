@@ -1,0 +1,20 @@
+---
+import { getCategoryLabel } from '../lib/categories';
+
+interface Props {
+  slug: string;
+  href?: string;
+}
+
+const { slug, href } = Astro.props;
+const label = getCategoryLabel(slug);
+const classes = 'inline-flex items-center rounded-full border border-ink-200 bg-ink-50 px-2.5 py-0.5 text-xs font-medium text-ink-700 no-underline hover:bg-ink-100';
+---
+
+{
+  href ? (
+    <a href={href} class={classes}>{label}</a>
+  ) : (
+    <span class={classes}>{label}</span>
+  )
+}

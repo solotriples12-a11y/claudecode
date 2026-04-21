@@ -1,0 +1,44 @@
+---
+const currentPath = Astro.url.pathname;
+const isActive = (href: string) => currentPath === href || (href !== '/' && currentPath.startsWith(href));
+---
+
+<header class="border-b border-ink-200 bg-white">
+  <div class="mx-auto max-w-6xl px-4 sm:px-6 py-3 flex items-center justify-between gap-4">
+    <a
+      href="/"
+      class="flex items-center gap-2 no-underline text-ink-900 hover:text-ink-900"
+      aria-label="PromptHub, ir al inicio"
+    >
+      <span
+        class="inline-flex h-8 w-8 items-center justify-center rounded bg-accent text-white font-bold"
+        aria-hidden="true"
+      >
+        Ph
+      </span>
+      <span class="font-semibold tracking-tight text-lg">PromptHub</span>
+    </a>
+    <nav aria-label="Principal" class="flex items-center gap-1 sm:gap-3 text-sm">
+      <a
+        href="/"
+        class:list={[
+          'px-2 py-1 rounded no-underline',
+          isActive('/') && currentPath === '/' ? 'text-ink-900 font-medium' : 'text-ink-600 hover:text-ink-900',
+        ]}
+        aria-current={currentPath === '/' ? 'page' : undefined}
+      >
+        Inicio
+      </a>
+      <a
+        href="/categorias/"
+        class:list={[
+          'px-2 py-1 rounded no-underline',
+          isActive('/categorias') ? 'text-ink-900 font-medium' : 'text-ink-600 hover:text-ink-900',
+        ]}
+        aria-current={isActive('/categorias') ? 'page' : undefined}
+      >
+        Categorías
+      </a>
+    </nav>
+  </div>
+</header>

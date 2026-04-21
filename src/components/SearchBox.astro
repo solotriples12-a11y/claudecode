@@ -1,0 +1,225 @@
+---
+import { CATEGORIES, LEVELS, LEVEL_LABELS } from '../lib/categories';
+---
+
+<section aria-labelledby="search-title" class="rounded border border-ink-200 bg-white p-4 sm:p-6">
+  <h2 id="search-title" class="sr-only">Buscar prompts</h2>
+  <div class="flex flex-col gap-3">
+    <label for="search-input" class="text-sm font-medium text-ink-700">
+      Buscar prompts
+      <span class="hidden sm:inline text-ink-500 font-normal">
+        — pulsa <kbd class="rounded border border-ink-300 bg-ink-50 px-1 py-0.5 font-mono text-xs">/</kbd> para enfocar
+      </span>
+    </label>
+    <div class="relative">
+      <input
+        id="search-input"
+        type="search"
+        autocomplete="off"
+        placeholder="Ej. síntesis de reunión, propuesta, revisión crítica…"
+        class="w-full rounded border border-ink-300 bg-white px-3 py-3 text-base shadow-sm focus:border-accent focus:outline-none"
+        aria-label="Buscar en la biblioteca de prompts"
+      />
+    </div>
+
+    <fieldset class="flex flex-wrap gap-2 items-center" aria-label="Filtrar por categoría">
+      <legend class="sr-only">Categorías</legend>
+      <span class="text-xs font-medium uppercase tracking-wide text-ink-500 mr-1">Categoría:</span>
+      {
+        CATEGORIES.map((c) => (
+          <label class="cursor-pointer">
+            <input type="checkbox" class="sr-only peer facet-category" value={c.slug} />
+            <span class="inline-flex items-center rounded-full border border-ink-200 bg-white px-2.5 py-1 text-xs font-medium text-ink-700 peer-checked:bg-accent peer-checked:text-white peer-checked:border-accent peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-accent">
+              {c.label}
+            </span>
+          </label>
+        ))
+      }
+    </fieldset>
+
+    <fieldset class="flex flex-wrap gap-2 items-center" aria-label="Filtrar por nivel">
+      <legend class="sr-only">Niveles</legend>
+      <span class="text-xs font-medium uppercase tracking-wide text-ink-500 mr-1">Nivel:</span>
+      {
+        LEVELS.map((l) => (
+          <label class="cursor-pointer">
+            <input type="checkbox" class="sr-only peer facet-level" value={l} />
+            <span class="inline-flex items-center rounded-full border border-ink-200 bg-white px-2.5 py-1 text-xs font-medium text-ink-700 peer-checked:bg-accent peer-checked:text-white peer-checked:border-accent peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-accent">
+              {LEVEL_LABELS[l]}
+            </span>
+          </label>
+        ))
+      }
+    </fieldset>
+  </div>
+
+  <div class="mt-4 text-xs text-ink-500" id="search-meta" aria-live="polite"></div>
+</section>
+
+<div id="search-results" class="mt-6 grid gap-3 sm:grid-cols-2" aria-live="polite"></div>
+<p id="search-empty" class="mt-6 hidden text-ink-600">
+  No hay resultados para esa búsqueda. Prueba con otros términos o quita algún filtro.
+</p>
+
+<script>
+  import MiniSearch from 'minisearch';
+  import { trackEvent } from '../lib/analytics';
+  import { SEARCH_CONFIG, type SearchDoc } from '../lib/search-index';
+  import { getCategoryLabel, LEVEL_LABELS, type Level } from '../lib/categories';
+
+  const input = document.getElementById('search-input') as HTMLInputElement | null;
+  const resultsEl = document.getElementById('search-results');
+  const emptyEl = document.getElementById('search-empty');
+  const metaEl = document.getElementById('search-meta');
+  const categoryCheckboxes = Array.from(
+    document.querySelectorAll<HTMLInputElement>('.facet-category'),
+  );
+  const levelCheckboxes = Array.from(
+    document.querySelectorAll<HTMLInputElement>('.facet-level'),
+  );
+
+  if (!input || !resultsEl || !emptyEl || !metaEl) {
+    throw new Error('SearchBox: missing DOM nodes');
+  }
+
+  async function loadDocs(): Promise<SearchDoc[]> {
+    const res = await fetch('/search-index.json');
+    if (!res.ok) throw new Error('No se pudo cargar el índice de búsqueda');
+    return res.json();
+  }
+
+  function escapeHtml(s: string): string {
+    return s.replace(/[&<>"']/g, (c) => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#39;',
+    })[c] as string);
+  }
+
+  function renderCard(doc: SearchDoc): string {
+    const levelClass: Record<string, string> = {
+      basico: 'border-emerald-200 bg-emerald-50 text-emerald-800',
+      intermedio: 'border-amber-200 bg-amber-50 text-amber-800',
+      avanzado: 'border-rose-200 bg-rose-50 text-rose-800',
+    };
+    const lvl = levelClass[doc.level] ?? 'border-ink-200 bg-ink-50 text-ink-700';
+    return `
+      <article class="group rounded border border-ink-200 bg-white p-4 hover:border-ink-400 transition-colors">
+        <div class="flex flex-wrap items-center gap-2 mb-2">
+          <span class="inline-flex items-center rounded-full border border-ink-200 bg-ink-50 px-2.5 py-0.5 text-xs font-medium text-ink-700">${escapeHtml(getCategoryLabel(doc.category))}</span>
+          <span class="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium ${lvl}">${escapeHtml(LEVEL_LABELS[doc.level as Level] ?? doc.level)}</span>
+        </div>
+        <h3 class="text-lg font-semibold leading-snug mb-1.5">
+          <a href="/prompts/${encodeURIComponent(doc.slug)}/" class="text-ink-900 no-underline group-hover:underline underline-offset-2">${escapeHtml(doc.title)}</a>
+        </h3>
+        <p class="text-sm text-ink-600 leading-relaxed">${escapeHtml(doc.summary)}</p>
+      </article>
+    `;
+  }
+
+  let docs: SearchDoc[] = [];
+  let mini: MiniSearch<SearchDoc> | null = null;
+  let lastQuery = '';
+  let debounceTimer: number | undefined;
+
+  function getSelectedFacets() {
+    const categories = categoryCheckboxes.filter((c) => c.checked).map((c) => c.value);
+    const levels = levelCheckboxes.filter((c) => c.checked).map((c) => c.value);
+    return { categories, levels };
+  }
+
+  function filterByFacets(items: SearchDoc[]) {
+    const { categories, levels } = getSelectedFacets();
+    return items.filter((d) => {
+      if (categories.length > 0 && !categories.includes(d.category)) return false;
+      if (levels.length > 0 && !levels.includes(d.level)) return false;
+      return true;
+    });
+  }
+
+  function render() {
+    if (!mini) return;
+    const q = input!.value.trim();
+    let results: SearchDoc[];
+    if (q.length === 0) {
+      // Sin query: mostramos los 6 más recientes por reviewedAt.
+      results = [...docs].sort((a, b) => b.reviewedAt.localeCompare(a.reviewedAt));
+    } else {
+      const hits = mini.search(q, SEARCH_CONFIG.searchOptions);
+      results = hits.map((h) => docs.find((d) => d.id === h.id)!).filter(Boolean);
+    }
+    results = filterByFacets(results);
+    const limited = q.length === 0 ? results.slice(0, 6) : results;
+
+    if (limited.length === 0) {
+      resultsEl!.innerHTML = '';
+      emptyEl!.classList.remove('hidden');
+      metaEl!.textContent = '0 resultados';
+    } else {
+      emptyEl!.classList.add('hidden');
+      resultsEl!.innerHTML = limited.map(renderCard).join('');
+      metaEl!.textContent =
+        q.length === 0
+          ? `Mostrando los ${limited.length} más recientes`
+          : `${limited.length} resultado${limited.length === 1 ? '' : 's'} para "${q}"`;
+    }
+
+    if (q.length > 0 && q !== lastQuery) {
+      lastQuery = q;
+      trackEvent('search_performed', { q, hits: limited.length });
+    }
+  }
+
+  // Atajo "/" para enfocar el buscador (salvo si el usuario está escribiendo).
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== '/') return;
+    const target = e.target as HTMLElement | null;
+    const tag = target?.tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || target?.isContentEditable) return;
+    e.preventDefault();
+    input!.focus();
+  });
+
+  input.addEventListener('input', () => {
+    window.clearTimeout(debounceTimer);
+    debounceTimer = window.setTimeout(render, 80);
+  });
+
+  [...categoryCheckboxes, ...levelCheckboxes].forEach((c) => c.addEventListener('change', render));
+
+  loadDocs()
+    .then((loaded) => {
+      docs = loaded;
+      mini = new MiniSearch<SearchDoc>({
+        fields: [...SEARCH_CONFIG.fields],
+        storeFields: [...SEARCH_CONFIG.storeFields],
+      });
+      mini.addAll(docs);
+      // Foco automático sólo en pantallas grandes, para no desplegar teclado en móvil.
+      if (window.matchMedia('(min-width: 1024px)').matches) {
+        input!.focus({ preventScroll: true });
+      }
+      render();
+    })
+    .catch((err) => {
+      // eslint-disable-next-line no-console
+      console.error(err);
+      metaEl!.textContent = 'No se pudo cargar la búsqueda.';
+    });
+</script>
+
+<style>
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+</style>
