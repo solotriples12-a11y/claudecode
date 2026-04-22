@@ -1,0 +1,67 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import TechniqueCard from '../../components/TechniqueCard.astro';
+import { LEVELS, LEVEL_LABELS, type Level } from '../../lib/categories';
+
+const techniques = await getCollection('techniques');
+
+const byLevel = new Map<Level, typeof techniques>();
+for (const l of LEVELS) byLevel.set(l, []);
+for (const t of techniques) {
+  byLevel.get(t.data.level as Level)!.push(t);
+}
+for (const [l, list] of byLevel) {
+  list.sort((a, b) => a.data.order - b.data.order);
+  byLevel.set(l, list);
+}
+
+const levelIntro: Record<Level, string> = {
+  basico: 'Empieza por aquí: la base que cualquier consultor debe dominar para que sus prompts funcionen de forma consistente.',
+  intermedio: 'Técnicas para cuando la tarea tiene varios pasos, requiere razonamiento o debes consolidar calidad antes de entregar.',
+  avanzado: 'Herramientas para problemas con alta incertidumbre, decisiones complejas o cuando quieres exprimir al modelo más allá del uso cotidiano.',
+};
+---
+
+<BaseLayout title="Técnicas de prompting" description="Técnicas de prompting curadas para consultores: qué son, cuándo usarlas y ejemplos antes/después.">
+  <header class="mb-8">
+    <p class="text-xs font-semibold uppercase tracking-wider text-ink-500 mb-1">Manual de técnicas</p>
+    <h1 class="text-3xl font-bold text-ink-900 mb-2">Técnicas de prompting</h1>
+    <p class="text-ink-600 max-w-prose leading-relaxed">
+      Más allá de copiar prompts, entender estas técnicas te permite adaptar
+      cualquier prompt a tu caso y diagnosticar por qué una salida no funciona.
+      Cada ficha incluye cuándo usarla, cómo aplicarla y un ejemplo antes/después.
+    </p>
+  </header>
+
+  {
+    LEVELS.map((level) => {
+      const items = byLevel.get(level) ?? [];
+      if (items.length === 0) return null;
+      return (
+        <section aria-labelledby={`level-${level}`} class="mb-10">
+          <div class="mb-4">
+            <h2 id={`level-${level}`} class="text-xl font-semibold text-ink-900 mb-1">
+              {LEVEL_LABELS[level]}
+            </h2>
+            <p class="text-sm text-ink-600 max-w-prose">{levelIntro[level]}</p>
+          </div>
+          <ul class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {items.map((t) => (
+              <li>
+                <TechniqueCard
+                  slug={t.slug}
+                  title={t.data.title}
+                  shortName={t.data.shortName}
+                  summary={t.data.summary}
+                  level={t.data.level}
+                  tags={t.data.tags}
+                />
+              </li>
+            ))}
+          </ul>
+        </section>
+      );
+    })
+  }
+</BaseLayout>

@@ -10,10 +10,13 @@ como sitio estático interno.
 
 ## Qué encontrarás
 
-- **Home** con buscador global y filtros por categoría y nivel.
+- **Home** con buscador global y filtros por categoría y nivel (devuelve
+  tanto prompts como técnicas, cada uno con su badge).
 - **Categorías** con los prompts agrupados por tipo de tarea.
 - **Ficha de prompt** con el texto completo, ejemplos de input y output,
   metadatos y un checklist de revisión visible junto al botón de copiar.
+- **Técnicas** con fichas conceptuales (Chain-of-Thought, few-shot,
+  descomposición…): cuándo usarlas, cómo aplicarlas y ejemplo antes/después.
 
 ## Stack
 
@@ -75,13 +78,14 @@ El `site` y `base` se pueden sobrescribir vía variables de entorno:
 SITE=https://prompthub.miempresa.com BASE=/ npm run build
 ```
 
-## Cómo contribuir un prompt
+## Cómo contribuir un prompt o una técnica
 
-El flujo habitual es:
+El flujo habitual es el mismo en ambos casos:
 
 1. Crear una rama desde `main`.
-2. Añadir un archivo `.md` en `src/content/prompts/` siguiendo el schema
-   (ver `CONTRIBUTING.md` para el detalle y las convenciones de estilo).
+2. Añadir un archivo `.md` en `src/content/prompts/` o `src/content/techniques/`
+   siguiendo el schema correspondiente (ver `CONTRIBUTING.md` para el detalle
+   y las convenciones de estilo).
 3. Abrir un pull request. El pipeline ejecuta `astro check`, que valida el
    frontmatter contra el schema Zod; si falta un campo o tiene un valor
    inválido (por ejemplo `level: "experto"`), el build falla con un mensaje
@@ -89,26 +93,29 @@ El flujo habitual es:
 4. Revisión entre pares y merge.
 
 Consulta [`CONTRIBUTING.md`](./CONTRIBUTING.md) para los detalles: estructura
-del frontmatter, cómo elegir categoría y nivel, convenciones de redacción y
-qué hace un buen checklist de revisión.
+del frontmatter (prompts y técnicas), cómo elegir categoría y nivel,
+convenciones de redacción, qué hace un buen checklist de revisión y cuándo
+una técnica merece su propia ficha.
 
 ## Estructura del repositorio
 
 ```
 src/
 ├── content/
-│   ├── config.ts          # Schema Zod del frontmatter
-│   └── prompts/           # Un .md por prompt
-├── components/            # Componentes Astro (SearchBox, CopyButton, ...)
+│   ├── config.ts          # Schema Zod del frontmatter (prompts + techniques)
+│   ├── prompts/           # Un .md por prompt ejecutable
+│   └── techniques/        # Un .md por técnica de prompting
+├── components/            # Componentes Astro (SearchBox, CopyButton, BeforeAfter, ...)
 ├── layouts/
 ├── lib/
 │   ├── categories.ts      # Lista controlada de categorías y niveles
-│   ├── search-index.ts    # Configuración de MiniSearch
+│   ├── search-index.ts    # Configuración de MiniSearch (prompts + técnicas)
 │   └── analytics.ts       # Stub de telemetría (listo para Plausible/PostHog)
 ├── pages/
 │   ├── index.astro
 │   ├── categorias/
 │   ├── prompts/
+│   ├── tecnicas/
 │   └── search-index.json.ts
 └── styles/
 ```

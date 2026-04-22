@@ -1,0 +1,30 @@
+---
+interface Props {
+  without: string;
+  with: string;
+  observation: string;
+}
+
+const { without, with: withTechnique, observation } = Astro.props;
+---
+
+<section aria-label="Ejemplo antes y después" class="space-y-3">
+  <div class="grid gap-3 lg:grid-cols-2">
+    <div class="rounded border border-rose-200 bg-rose-50/40 p-4">
+      <h3 class="text-xs font-semibold uppercase tracking-wider text-rose-900 mb-2 flex items-center gap-1.5">
+        <span aria-hidden="true">—</span> Sin la técnica
+      </h3>
+      <pre class="whitespace-pre-wrap break-words text-sm text-ink-800 leading-relaxed font-mono">{without}</pre>
+    </div>
+    <div class="rounded border border-emerald-200 bg-emerald-50/40 p-4">
+      <h3 class="text-xs font-semibold uppercase tracking-wider text-emerald-900 mb-2 flex items-center gap-1.5">
+        <span aria-hidden="true">+</span> Con la técnica
+      </h3>
+      <pre class="whitespace-pre-wrap break-words text-sm text-ink-800 leading-relaxed font-mono">{withTechnique}</pre>
+    </div>
+  </div>
+  <div class="rounded border border-ink-200 bg-ink-50 p-3 text-sm text-ink-700 leading-relaxed">
+    <strong class="font-semibold text-ink-900">Qué cambia:</strong>
+    {observation}
+  </div>
+</section>
