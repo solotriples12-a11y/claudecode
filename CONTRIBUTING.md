@@ -1,7 +1,15 @@
 # Cómo contribuir a PromptHub
 
 Gracias por querer ampliar la biblioteca. Esta guía cubre todo lo que necesitas
-para añadir un prompt nuevo o editar uno existente.
+para añadir un **prompt** o una **técnica** nueva, o editar algo existente.
+
+La biblioteca tiene dos tipos de contenido con roles complementarios:
+
+- **Prompt** (`src/content/prompts/*.md`): texto listo para copiar y usar con
+  un cliente. El consultor lo ejecuta.
+- **Técnica** (`src/content/techniques/*.md`): ficha conceptual sobre **cómo
+  prompteamos** (Chain-of-Thought, few-shot, descomposición…). El consultor la
+  aprende y la aplica para adaptar cualquier prompt.
 
 ## Flujo de trabajo
 
@@ -159,3 +167,90 @@ Si mejoras un prompt:
 
 Si el cambio es radical y puede confundir a quien ya lo usa, crea un prompt
 nuevo con otro slug y deja el antiguo en su sitio.
+
+---
+
+## Cómo contribuir una técnica
+
+Una **técnica** documenta un patrón de prompting (no un prompt concreto).
+Ejemplos: "Chain-of-Thought", "Few-shot", "Descomposición de tareas". Vive en
+`src/content/techniques/` con su propio schema.
+
+### Cuándo añadir una técnica nueva
+
+- Es una técnica **probada en literatura o práctica habitual**, no una opinión
+  personal.
+- Un consultor puede **aplicarla sin cambiar de herramienta** (vale vía chat).
+- Tiene una diferencia clara frente a las técnicas ya documentadas. Si se
+  solapa 80% con una existente, amplía esa ficha en lugar de duplicar.
+- Se puede explicar con un ejemplo **antes/después** que muestre la mejora.
+
+Si no cumple las cuatro, probablemente no merece ficha propia.
+
+### Anatomía de una técnica
+
+```yaml
+---
+title: "Nombre completo con matiz explicativo"
+shortName: "Nombre corto para badges y enlaces"
+level: "intermedio"                 # basico | intermedio | avanzado
+summary: "Una o dos frases que capturen qué hace y cuándo vale."
+whenToUse:
+  - "Escenario concreto donde brilla"
+  - "Otro escenario concreto"
+whenNotToUse:
+  - "Cuándo NO aporta o incluso perjudica"
+  - "Escenario donde otra técnica es mejor"
+howTo:
+  - "Paso 1 accionable para aplicarla"
+  - "Paso 2 con detalle concreto"
+  - "Paso 3 con una variante útil"
+example:
+  without: |
+    Prompt sin aplicar la técnica (realista, no simplista)
+  with: |
+    Prompt aplicando la técnica
+  observation: "Qué cambia entre ambos y por qué."
+pitfalls:                           # opcional
+  - "Error común 1 con antídoto"
+  - "Error común 2"
+relatedTechniques:                  # opcional, slugs de otras técnicas
+  - "chain-of-thought"
+references:                         # opcional, papers o lecturas serias
+  - title: "Título del paper o recurso"
+    url: "https://…"
+tags: ["razonamiento", "formato"]
+author: "Tu nombre o equipo"
+reviewedAt: 2026-04-22
+order: 7                            # orden manual dentro de su nivel en el index
+---
+
+# Cuerpo opcional
+
+Explicación más larga si la técnica lo merece. Puedes omitirlo si el
+frontmatter ya cuenta la historia completa.
+```
+
+### Criterios específicos para técnicas
+
+- **`summary`**: que un consultor leyendo sólo el summary decida si quiere
+  abrir la ficha. Evita fórmulas como "una técnica muy útil".
+- **`example`**: es el bloque más importante. El `without` debe ser realista
+  (un prompt plausible, no un hombre de paja), y el `with` debe mostrar la
+  aplicación limpia. El `observation` explica qué mejora — una frase, no un
+  ensayo.
+- **`howTo`**: pasos imperativos y concretos. Si un paso empieza por "considera"
+  o "piensa en", probablemente no es un paso, es un consejo.
+- **`references`**: sólo si aportan. Un paper académico está bien; un blog post
+  aleatorio no. Si no hay referencia seria, omite el campo.
+- **`order`**: orden manual dentro del nivel en el index. Cuando añadas una
+  técnica nueva, elige un número que la sitúe donde debería ir pedagógicamente.
+  No es obligatorio que sean consecutivos.
+
+### Qué NO hacer en una técnica
+
+- No conviertas una técnica en un prompt disfrazado. Si lo que tienes es un
+  prompt reutilizable concreto, va en `prompts/`, no aquí.
+- No mezcles varias técnicas en una sola ficha. Si hablas de CoT Y
+  descomposición, son dos fichas con `relatedTechniques` cruzado.
+- No añadas disclaimers sobre IA en general. La ficha va al grano.

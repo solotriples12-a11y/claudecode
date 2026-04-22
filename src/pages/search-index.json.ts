@@ -1,10 +1,13 @@
 import type { APIRoute } from 'astro';
 import { getCollection } from 'astro:content';
-import { toSearchDocs } from '../lib/search-index';
+import { promptsToSearchDocs, techniquesToSearchDocs } from '../lib/search-index';
 
 export const GET: APIRoute = async () => {
-  const prompts = await getCollection('prompts');
-  const docs = toSearchDocs(prompts);
+  const [prompts, techniques] = await Promise.all([
+    getCollection('prompts'),
+    getCollection('techniques'),
+  ]);
+  const docs = [...promptsToSearchDocs(prompts), ...techniquesToSearchDocs(techniques)];
   return new Response(JSON.stringify(docs), {
     headers: { 'Content-Type': 'application/json' },
   });

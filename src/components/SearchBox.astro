@@ -3,10 +3,10 @@ import { CATEGORIES, LEVELS, LEVEL_LABELS } from '../lib/categories';
 ---
 
 <section aria-labelledby="search-title" class="rounded border border-ink-200 bg-white p-4 sm:p-6">
-  <h2 id="search-title" class="sr-only">Buscar prompts</h2>
+  <h2 id="search-title" class="sr-only">Buscar prompts y técnicas</h2>
   <div class="flex flex-col gap-3">
     <label for="search-input" class="text-sm font-medium text-ink-700">
-      Buscar prompts
+      Buscar prompts y técnicas
       <span class="hidden sm:inline text-ink-500 font-normal">
         — pulsa <kbd class="rounded border border-ink-300 bg-ink-50 px-1 py-0.5 font-mono text-xs">/</kbd> para enfocar
       </span>
@@ -16,9 +16,9 @@ import { CATEGORIES, LEVELS, LEVEL_LABELS } from '../lib/categories';
         id="search-input"
         type="search"
         autocomplete="off"
-        placeholder="Ej. síntesis de reunión, propuesta, revisión crítica…"
+        placeholder="Ej. síntesis de reunión, paso a paso, few-shot…"
         class="w-full rounded border border-ink-300 bg-white px-3 py-3 text-base shadow-sm focus:border-accent focus:outline-none"
-        aria-label="Buscar en la biblioteca de prompts"
+        aria-label="Buscar prompts y técnicas"
       />
     </div>
 
@@ -108,14 +108,25 @@ import { CATEGORIES, LEVELS, LEVEL_LABELS } from '../lib/categories';
       avanzado: 'border-rose-200 bg-rose-50 text-rose-800',
     };
     const lvl = levelClass[doc.level] ?? 'border-ink-200 bg-ink-50 text-ink-700';
+    const isTechnique = doc.type === 'technique';
+    const typeBadge = isTechnique
+      ? '<span class="inline-flex items-center rounded-full border border-accent/30 bg-accent/10 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-accent">Técnica</span>'
+      : '<span class="inline-flex items-center rounded-full border border-ink-200 bg-white px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-ink-700">Prompt</span>';
+    const secondaryBadge = isTechnique || !doc.category
+      ? ''
+      : `<span class="inline-flex items-center rounded-full border border-ink-200 bg-ink-50 px-2.5 py-0.5 text-xs font-medium text-ink-700">${escapeHtml(getCategoryLabel(doc.category))}</span>`;
+    const href = isTechnique
+      ? `${baseNormalized}tecnicas/${encodeURIComponent(doc.slug)}/`
+      : `${baseNormalized}prompts/${encodeURIComponent(doc.slug)}/`;
     return `
       <article class="group rounded border border-ink-200 bg-white p-4 hover:border-ink-400 transition-colors">
         <div class="flex flex-wrap items-center gap-2 mb-2">
-          <span class="inline-flex items-center rounded-full border border-ink-200 bg-ink-50 px-2.5 py-0.5 text-xs font-medium text-ink-700">${escapeHtml(getCategoryLabel(doc.category))}</span>
+          ${typeBadge}
+          ${secondaryBadge}
           <span class="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium ${lvl}">${escapeHtml(LEVEL_LABELS[doc.level as Level] ?? doc.level)}</span>
         </div>
         <h3 class="text-lg font-semibold leading-snug mb-1.5">
-          <a href="${baseNormalized}prompts/${encodeURIComponent(doc.slug)}/" class="text-ink-900 no-underline group-hover:underline underline-offset-2">${escapeHtml(doc.title)}</a>
+          <a href="${href}" class="text-ink-900 no-underline group-hover:underline underline-offset-2">${escapeHtml(doc.title)}</a>
         </h3>
         <p class="text-sm text-ink-600 leading-relaxed">${escapeHtml(doc.summary)}</p>
       </article>
@@ -136,7 +147,15 @@ import { CATEGORIES, LEVELS, LEVEL_LABELS } from '../lib/categories';
   function filterByFacets(items: SearchDoc[]) {
     const { categories, levels } = getSelectedFacets();
     return items.filter((d) => {
-      if (categories.length > 0 && !categories.includes(d.category)) return false;
+      // Las técnicas no tienen categoría; cuando el usuario filtra por categoría
+      // las mantenemos visibles porque suelen aplicar transversalmente.
+      if (
+        categories.length > 0 &&
+        d.type === 'prompt' &&
+        (!d.category || !categories.includes(d.category))
+      ) {
+        return false;
+      }
       if (levels.length > 0 && !levels.includes(d.level)) return false;
       return true;
     });
