@@ -14,7 +14,7 @@ const { text, slug, label = 'Copiar prompt' } = Astro.props;
 <div class="copy-button-wrapper">
   <button
     type="button"
-    class="copy-button inline-flex w-full items-center justify-center gap-2 rounded bg-accent px-4 py-3 text-base font-medium text-white no-underline hover:bg-accent-hover focus-visible:outline-offset-4 transition-colors"
+    class="copy-button inline-flex w-full items-center justify-center gap-2 rounded-xl bg-ink-900 px-5 py-4 text-[14.5px] font-bold text-white no-underline hover:bg-ink-800 focus-visible:outline-offset-4 transition-colors shadow-md tracking-tight"
     data-slug={slug}
     aria-label={`${label}: copia el texto completo al portapapeles`}
   >

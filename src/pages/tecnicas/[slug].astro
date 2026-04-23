@@ -29,87 +29,115 @@ const allTechniques = await getCollection('techniques');
 const related = data.relatedTechniques
   .map((slug) => allTechniques.find((t) => t.slug === slug))
   .filter((t): t is NonNullable<typeof t> => !!t);
+
+const levelBadgeClass: Record<string, string> = {
+  basico: 'text-emerald-700 bg-emerald-50 border-emerald-200',
+  intermedio: 'text-blue-700 bg-blue-50 border-blue-200',
+  avanzado: 'text-violet-700 bg-violet-50 border-violet-200',
+};
+const howToBadgeClass = levelBadgeClass[data.level] ?? levelBadgeClass.intermedio;
 ---
 
 <BaseLayout title={data.shortName} description={data.summary}>
-  <nav class="mb-4 text-sm" aria-label="Migas de pan">
-    <a href={url()} class="text-ink-600 hover:text-ink-900">Inicio</a>
-    <span class="text-ink-400 mx-1.5" aria-hidden="true">/</span>
-    <a href={url('tecnicas/')} class="text-ink-600 hover:text-ink-900">Técnicas</a>
-    <span class="text-ink-400 mx-1.5" aria-hidden="true">/</span>
-    <span class="text-ink-800">{data.shortName}</span>
+  <nav class="mb-5 flex items-center gap-1.5 text-[12.5px] text-ink-400" aria-label="Migas de pan">
+    <a href={url()} class="hover:text-accent transition-colors no-underline">Inicio</a>
+    <span aria-hidden="true">/</span>
+    <a href={url('tecnicas/')} class="hover:text-accent transition-colors no-underline">Técnicas</a>
+    <span aria-hidden="true">/</span>
+    <span class="text-ink-700 font-semibold">{data.shortName}</span>
   </nav>
 
-  <header class="mb-6">
-    <div class="flex flex-wrap items-center gap-2 mb-2">
+  <header class="mb-10">
+    <div class="flex flex-wrap items-center gap-2 mb-4">
       <TypeBadge type="technique" />
       <LevelBadge level={data.level} />
     </div>
-    <h1 class="text-3xl sm:text-4xl font-bold text-ink-900 leading-tight mb-2">{data.title}</h1>
-    <p class="text-ink-600 max-w-prose leading-relaxed">{data.summary}</p>
+    <h1 class="text-[2rem] sm:text-[2.1rem] font-extrabold text-ink-900 leading-[1.12] tracking-tight mb-3">{data.title}</h1>
+    <p class="text-base text-ink-600 max-w-2xl leading-[1.7]">{data.summary}</p>
   </header>
 
-  <div class="grid gap-6 lg:grid-cols-[1fr_280px]">
+  <div class="grid gap-8 lg:grid-cols-[1fr_272px]">
     <!-- Contenido principal -->
-    <div class="order-last lg:order-first min-w-0 space-y-8">
+    <div class="order-last lg:order-first min-w-0 space-y-10">
+
+      <!-- Ejemplo antes / después -->
       <section aria-labelledby="example-title">
-        <h2 id="example-title" class="text-sm font-semibold uppercase tracking-wider text-ink-500 mb-3">
-          Ejemplo: antes / después
-        </h2>
+        <div class="text-[10.5px] font-bold uppercase tracking-widest text-ink-400 mb-3">
+          Ejemplo: Antes / Después
+        </div>
         <BeforeAfter
           without={data.example.without}
           with={data.example.with}
           observation={data.example.observation}
+          level={data.level as 'basico' | 'intermedio' | 'avanzado'}
         />
       </section>
 
-      <section aria-labelledby="when-title" class="grid gap-4 sm:grid-cols-2">
-        <div class="rounded border border-emerald-200 bg-emerald-50/50 p-4">
-          <h2 id="when-title" class="text-sm font-semibold text-emerald-900 mb-2 flex items-center gap-1.5">
-            <span aria-hidden="true">✓</span> Cuándo usarla
-          </h2>
-          <ul class="space-y-1.5 text-sm text-ink-800 list-disc pl-5">
+      <!-- Cuándo usarla / no usarla -->
+      <section aria-labelledby="when-title" class="grid gap-3 sm:grid-cols-2">
+        <div class="rounded-xl border-[1.5px] border-emerald-200 bg-[#f0fdf9] p-5">
+          <div class="flex items-center gap-2 mb-3">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2.5" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>
+            <h2 id="when-title" class="text-sm font-bold text-emerald-700">Cuándo usarla</h2>
+          </div>
+          <ul class="space-y-2 text-sm text-emerald-900 list-disc pl-5 leading-relaxed">
             {data.whenToUse.map((s) => <li>{s}</li>)}
           </ul>
         </div>
-        <div class="rounded border border-rose-200 bg-rose-50/50 p-4">
-          <h2 class="text-sm font-semibold text-rose-900 mb-2 flex items-center gap-1.5">
-            <span aria-hidden="true">✗</span> Cuándo NO usarla
-          </h2>
-          <ul class="space-y-1.5 text-sm text-ink-800 list-disc pl-5">
+        <div class="rounded-xl border-[1.5px] border-red-200 bg-[#fff5f5] p-5">
+          <div class="flex items-center gap-2 mb-3">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2.5" aria-hidden="true"><path d="M18 6L6 18M6 6l12 12"/></svg>
+            <h2 class="text-sm font-bold text-red-700">Cuándo NO usarla</h2>
+          </div>
+          <ul class="space-y-2 text-sm text-red-900 list-disc pl-5 leading-relaxed">
             {data.whenNotToUse.map((s) => <li>{s}</li>)}
           </ul>
         </div>
       </section>
 
+      <!-- Cómo aplicarla -->
       <section aria-labelledby="howto-title">
-        <h2 id="howto-title" class="text-sm font-semibold uppercase tracking-wider text-ink-500 mb-2">
+        <div class="text-[10.5px] font-bold uppercase tracking-widest text-ink-400 mb-3">
           Cómo aplicarla
-        </h2>
-        <ol class="space-y-2 text-ink-800 list-decimal pl-5 leading-relaxed">
-          {data.howTo.map((s) => <li>{s}</li>)}
+        </div>
+        <ol class="space-y-2" aria-labelledby="howto-title">
+          {data.howTo.map((s, i) => (
+            <li class="flex gap-3 items-start p-3.5 bg-white rounded-lg border border-ink-200">
+              <span class:list={['text-[11px] font-bold shrink-0 mt-0.5 px-1.5 py-0.5 rounded border leading-none', howToBadgeClass]}>
+                {i + 1}
+              </span>
+              <span class="text-sm leading-relaxed text-ink-800">{s}</span>
+            </li>
+          ))}
         </ol>
       </section>
 
+      <!-- Errores comunes -->
       {
         data.pitfalls.length > 0 && (
           <section aria-labelledby="pitfalls-title">
-            <h2 id="pitfalls-title" class="text-sm font-semibold uppercase tracking-wider text-ink-500 mb-2">
+            <div class="text-[10.5px] font-bold uppercase tracking-widest text-ink-400 mb-3">
               Errores comunes
-            </h2>
-            <ul class="space-y-1.5 text-ink-800 list-disc pl-5 leading-relaxed">
-              {data.pitfalls.map((p) => <li>{p}</li>)}
+            </div>
+            <ul class="space-y-2" aria-labelledby="pitfalls-title">
+              {data.pitfalls.map((p) => (
+                <li class="flex gap-3 items-start p-3.5 bg-white rounded-lg border border-ink-200">
+                  <span class="w-2 h-2 shrink-0 rounded-full bg-orange-400 mt-2" aria-hidden="true" />
+                  <span class="text-sm leading-relaxed text-ink-800">{p}</span>
+                </li>
+              ))}
             </ul>
           </section>
         )
       }
 
+      <!-- Notas opcionales -->
       {
         hasBody && (
           <section aria-labelledby="notes-title">
-            <h2 id="notes-title" class="text-sm font-semibold uppercase tracking-wider text-ink-500 mb-2">
+            <div class="text-[10.5px] font-bold uppercase tracking-widest text-ink-400 mb-3">
               Notas
-            </h2>
+            </div>
             <div class="prose-prompt max-w-none text-ink-800 leading-relaxed">
               <Content />
             </div>
@@ -118,23 +146,25 @@ const related = data.relatedTechniques
       }
     </div>
 
-    <!-- Sidebar: metadatos + relacionadas -->
+    <!-- Sidebar -->
     <aside class="order-first lg:order-last" aria-label="Metadatos y técnicas relacionadas">
       <div class="lg:sticky lg:top-4 flex flex-col gap-4">
+
         {
           related.length > 0 && (
-            <section class="rounded border border-ink-200 bg-white p-4">
-              <h2 class="text-xs font-semibold uppercase tracking-wider text-ink-500 mb-2">
+            <section class="rounded-xl border border-ink-200 bg-white p-5 shadow-sm">
+              <div class="text-[10.5px] font-bold uppercase tracking-widest text-ink-400 mb-3">
                 Técnicas relacionadas
-              </h2>
-              <ul class="space-y-1.5 text-sm">
+              </div>
+              <ul class="divide-y divide-ink-100">
                 {related.map((r) => (
                   <li>
                     <a
                       href={url(`tecnicas/${r.slug}/`)}
-                      class="text-accent hover:underline underline-offset-2"
+                      class="flex items-center justify-between py-2.5 text-[13.5px] font-semibold text-accent no-underline hover:text-ink-900 transition-colors"
                     >
                       {r.data.shortName}
+                      <span class="text-ink-300 text-base" aria-hidden="true">→</span>
                     </a>
                   </li>
                 ))}
@@ -143,29 +173,29 @@ const related = data.relatedTechniques
           )
         }
 
-        <section class="rounded border border-ink-200 bg-white p-4 text-sm">
-          <h2 class="text-xs font-semibold uppercase tracking-wider text-ink-500 mb-2">
+        <section class="rounded-xl border border-ink-200 bg-white p-5 shadow-sm text-sm">
+          <div class="text-[10.5px] font-bold uppercase tracking-widest text-ink-400 mb-3">
             Metadatos
-          </h2>
+          </div>
           <dl class="space-y-2">
             <div class="flex gap-2">
-              <dt class="text-ink-500 min-w-[5rem]">Autor:</dt>
-              <dd class="text-ink-800">{data.author}</dd>
+              <dt class="text-ink-400 min-w-[5rem]">Autor:</dt>
+              <dd class="text-ink-800 font-semibold">{data.author}</dd>
             </div>
             <div class="flex gap-2">
-              <dt class="text-ink-500 min-w-[5rem]">Revisado:</dt>
-              <dd class="text-ink-800">{reviewedAtFmt}</dd>
+              <dt class="text-ink-400 min-w-[5rem]">Revisado:</dt>
+              <dd class="text-ink-800 font-semibold">{reviewedAtFmt}</dd>
             </div>
             <div class="flex gap-2">
-              <dt class="text-ink-500 min-w-[5rem]">Nivel:</dt>
-              <dd class="text-ink-800">{data.level}</dd>
+              <dt class="text-ink-400 min-w-[5rem]">Nivel:</dt>
+              <dd class="text-ink-800 font-semibold">{data.level}</dd>
             </div>
           </dl>
           {
             data.tags.length > 0 && (
-              <ul class="mt-3 flex flex-wrap gap-1.5 text-xs text-ink-600" aria-label="Etiquetas">
+              <ul class="mt-4 flex flex-wrap gap-1.5" aria-label="Etiquetas">
                 {data.tags.map((t) => (
-                  <li class="rounded bg-ink-100 px-1.5 py-0.5">#{t}</li>
+                  <li class="text-[11px] text-ink-400 bg-ink-100 border border-ink-200 px-2 py-0.5 rounded-full">#{t}</li>
                 ))}
               </ul>
             )
@@ -174,16 +204,16 @@ const related = data.relatedTechniques
 
         {
           data.references.length > 0 && (
-            <section class="rounded border border-ink-200 bg-white p-4 text-sm">
-              <h2 class="text-xs font-semibold uppercase tracking-wider text-ink-500 mb-2">
+            <section class="rounded-xl border border-ink-200 bg-white p-5 shadow-sm text-sm">
+              <div class="text-[10.5px] font-bold uppercase tracking-widest text-ink-400 mb-3">
                 Referencias
-              </h2>
-              <ul class="space-y-1.5">
+              </div>
+              <ul class="space-y-2">
                 {data.references.map((r) => (
                   <li>
                     <a
                       href={r.url}
-                      class="text-accent hover:underline underline-offset-2"
+                      class="text-accent hover:text-accent-hover no-underline hover:underline underline-offset-2"
                       target="_blank"
                       rel="noopener noreferrer"
                     >

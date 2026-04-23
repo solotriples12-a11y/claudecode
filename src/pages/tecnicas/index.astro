@@ -21,13 +21,25 @@ const levelIntro: Record<Level, string> = {
   intermedio: 'Técnicas para cuando la tarea tiene varios pasos, requiere razonamiento o debes consolidar calidad antes de entregar.',
   avanzado: 'Herramientas para problemas con alta incertidumbre, decisiones complejas o cuando quieres exprimir al modelo más allá del uso cotidiano.',
 };
+
+const dividerColor: Record<Level, string> = {
+  basico: '#a7f3d0',
+  intermedio: '#bfdbfe',
+  avanzado: '#c4b5fd',
+};
+
+const titleColor: Record<Level, string> = {
+  basico: '#059669',
+  intermedio: '#2563eb',
+  avanzado: '#7c3aed',
+};
 ---
 
 <BaseLayout title="Técnicas de prompting" description="Técnicas de prompting curadas para consultores: qué son, cuándo usarlas y ejemplos antes/después.">
-  <header class="mb-8">
-    <p class="text-xs font-semibold uppercase tracking-wider text-ink-500 mb-1">Manual de técnicas</p>
-    <h1 class="text-3xl font-bold text-ink-900 mb-2">Técnicas de prompting</h1>
-    <p class="text-ink-600 max-w-prose leading-relaxed">
+  <header class="mb-10">
+    <div class="text-[10.5px] font-bold uppercase tracking-widest text-ink-400 mb-2">Manual de técnicas</div>
+    <h1 class="text-[2rem] font-extrabold text-ink-900 tracking-tight mb-3">Técnicas de prompting</h1>
+    <p class="text-base text-ink-600 max-w-2xl leading-[1.7]">
       Más allá de copiar prompts, entender estas técnicas te permite adaptar
       cualquier prompt a tu caso y diagnosticar por qué una salida no funciona.
       Cada ficha incluye cuándo usarla, cómo aplicarla y un ejemplo antes/después.
@@ -39,13 +51,21 @@ const levelIntro: Record<Level, string> = {
       const items = byLevel.get(level) ?? [];
       if (items.length === 0) return null;
       return (
-        <section aria-labelledby={`level-${level}`} class="mb-10">
-          <div class="mb-4">
-            <h2 id={`level-${level}`} class="text-xl font-semibold text-ink-900 mb-1">
+        <section aria-labelledby={`level-${level}`} class="mb-14">
+          <div class="flex items-center gap-4 mb-3">
+            <h2
+              id={`level-${level}`}
+              class="text-2xl font-bold tracking-tight whitespace-nowrap"
+              style={`color: ${titleColor[level]}`}
+            >
               {LEVEL_LABELS[level]}
             </h2>
-            <p class="text-sm text-ink-600 max-w-prose">{levelIntro[level]}</p>
+            <div
+              class="h-0.5 flex-1 rounded"
+              style={`background: linear-gradient(to right, ${dividerColor[level]}, transparent)`}
+            />
           </div>
+          <p class="text-sm text-ink-600 mb-5 max-w-prose">{levelIntro[level]}</p>
           <ul class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {items.map((t) => (
               <li>
