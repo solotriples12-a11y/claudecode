@@ -9,9 +9,9 @@ const { level } = Astro.props;
 const label = LEVEL_LABELS[level as Level] ?? level;
 
 const colorByLevel: Record<string, string> = {
-  basico: 'border-emerald-200 bg-emerald-50 text-emerald-800',
-  intermedio: 'border-amber-200 bg-amber-50 text-amber-800',
-  avanzado: 'border-rose-200 bg-rose-50 text-rose-800',
+  basico: 'border-emerald-200 bg-emerald-50 text-emerald-700',
+  intermedio: 'border-blue-200 bg-blue-50 text-blue-700',
+  avanzado: 'border-violet-200 bg-violet-50 text-violet-700',
 };
 const classes = colorByLevel[level] ?? 'border-ink-200 bg-ink-50 text-ink-700';
 ---

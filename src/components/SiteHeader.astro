@@ -10,52 +10,39 @@ const isCategorias = currentPath.startsWith(categorias.replace(/\/$/, ''));
 const isTecnicas = currentPath.startsWith(tecnicas.replace(/\/$/, ''));
 ---
 
-<header class="border-b border-ink-200 bg-white">
-  <div class="mx-auto max-w-6xl px-4 sm:px-6 py-3 flex items-center justify-between gap-4">
-    <a
-      href={home}
-      class="flex items-center gap-2 no-underline text-ink-900 hover:text-ink-900"
-      aria-label="PromptHub, ir al inicio"
-    >
-      <span
-        class="inline-flex h-8 w-8 items-center justify-center rounded bg-accent text-white font-bold"
-        aria-hidden="true"
-      >
-        Ph
-      </span>
-      <span class="font-semibold tracking-tight text-lg">PromptHub</span>
-    </a>
-    <nav aria-label="Principal" class="flex items-center gap-1 sm:gap-3 text-sm">
+<header class="bg-ink-100 border-b border-ink-200">
+  <div class="mx-auto max-w-6xl px-4 sm:px-6">
+    <div class="flex items-baseline gap-2.5 pt-4 sm:pt-5">
       <a
         href={home}
-        class:list={[
-          'px-2 py-1 rounded no-underline',
-          isHome ? 'text-ink-900 font-medium' : 'text-ink-600 hover:text-ink-900',
-        ]}
-        aria-current={isHome ? 'page' : undefined}
+        class="text-[1.1rem] font-extrabold tracking-tight text-ink-900 no-underline hover:text-ink-900 leading-none"
+        aria-label="PromptHub, ir al inicio"
       >
-        Inicio
+        PromptHub
       </a>
-      <a
-        href={categorias}
-        class:list={[
-          'px-2 py-1 rounded no-underline',
-          isCategorias ? 'text-ink-900 font-medium' : 'text-ink-600 hover:text-ink-900',
-        ]}
-        aria-current={isCategorias ? 'page' : undefined}
-      >
-        Categorías
-      </a>
-      <a
-        href={tecnicas}
-        class:list={[
-          'px-2 py-1 rounded no-underline',
-          isTecnicas ? 'text-ink-900 font-medium' : 'text-ink-600 hover:text-ink-900',
-        ]}
-        aria-current={isTecnicas ? 'page' : undefined}
-      >
-        Técnicas
-      </a>
+      <span class="hidden sm:inline text-sm text-ink-400 leading-none">
+        Prompts y técnicas para consultores
+      </span>
+    </div>
+    <nav aria-label="Principal" class="flex gap-0 mt-3">
+      {[
+        { href: home, label: 'Inicio', active: isHome },
+        { href: categorias, label: 'Categorías', active: isCategorias },
+        { href: tecnicas, label: 'Técnicas', active: isTecnicas },
+      ].map(({ href, label, active }) => (
+        <a
+          href={href}
+          class:list={[
+            'px-3.5 py-2 text-sm font-medium no-underline border-b-2 -mb-px transition-colors',
+            active
+              ? 'text-accent border-accent'
+              : 'text-ink-600 border-transparent hover:text-ink-900 hover:border-ink-300',
+          ]}
+          aria-current={active ? 'page' : undefined}
+        >
+          {label}
+        </a>
+      ))}
     </nav>
   </div>
 </header>

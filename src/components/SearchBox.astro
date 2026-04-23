@@ -2,34 +2,34 @@
 import { CATEGORIES, LEVELS, LEVEL_LABELS } from '../lib/categories';
 ---
 
-<section aria-labelledby="search-title" class="rounded border border-ink-200 bg-white p-4 sm:p-6">
+<section aria-labelledby="search-title" class="rounded-xl border border-ink-200 bg-white p-5 sm:p-6 shadow-md">
   <h2 id="search-title" class="sr-only">Buscar prompts y técnicas</h2>
-  <div class="flex flex-col gap-3">
-    <label for="search-input" class="text-sm font-medium text-ink-700">
-      Buscar prompts y técnicas
-      <span class="hidden sm:inline text-ink-500 font-normal">
-        — pulsa <kbd class="rounded border border-ink-300 bg-ink-50 px-1 py-0.5 font-mono text-xs">/</kbd> para enfocar
-      </span>
-    </label>
-    <div class="relative">
-      <input
-        id="search-input"
-        type="search"
-        autocomplete="off"
-        placeholder="Ej. síntesis de reunión, paso a paso, few-shot…"
-        class="w-full rounded border border-ink-300 bg-white px-3 py-3 text-base shadow-sm focus:border-accent focus:outline-none"
-        aria-label="Buscar prompts y técnicas"
-      />
+  <div class="flex flex-col gap-4">
+    <div>
+      <div class="text-[11px] font-bold uppercase tracking-widest text-ink-400 mb-3">Buscar prompts y técnicas</div>
+      <div class="relative">
+        <svg class="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-ink-400" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+        </svg>
+        <input
+          id="search-input"
+          type="search"
+          autocomplete="off"
+          placeholder="Ej. síntesis de reunión, paso a paso, few-shot…"
+          class="w-full rounded-lg border-[1.5px] border-ink-200 bg-ink-100 pl-10 pr-3 py-3 text-sm text-ink-800 focus:border-accent focus:outline-none transition-colors"
+          aria-label="Buscar prompts y técnicas"
+        />
+      </div>
     </div>
 
     <fieldset class="flex flex-wrap gap-2 items-center" aria-label="Filtrar por categoría">
       <legend class="sr-only">Categorías</legend>
-      <span class="text-xs font-medium uppercase tracking-wide text-ink-500 mr-1">Categoría:</span>
+      <span class="text-[10.5px] font-bold uppercase tracking-widest text-ink-400 mr-1">Cat.:</span>
       {
         CATEGORIES.map((c) => (
           <label class="cursor-pointer">
             <input type="checkbox" class="sr-only peer facet-category" value={c.slug} />
-            <span class="inline-flex items-center rounded-full border border-ink-200 bg-white px-2.5 py-1 text-xs font-medium text-ink-700 peer-checked:bg-accent peer-checked:text-white peer-checked:border-accent peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-accent">
+            <span class="inline-flex items-center rounded-full border-[1.5px] border-ink-200 bg-white px-3 py-1 text-xs font-semibold text-ink-600 transition-all peer-checked:bg-blue-50 peer-checked:text-accent peer-checked:border-accent peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-accent">
               {c.label}
             </span>
           </label>
@@ -39,12 +39,12 @@ import { CATEGORIES, LEVELS, LEVEL_LABELS } from '../lib/categories';
 
     <fieldset class="flex flex-wrap gap-2 items-center" aria-label="Filtrar por nivel">
       <legend class="sr-only">Niveles</legend>
-      <span class="text-xs font-medium uppercase tracking-wide text-ink-500 mr-1">Nivel:</span>
+      <span class="text-[10.5px] font-bold uppercase tracking-widest text-ink-400 mr-1">Nivel:</span>
       {
         LEVELS.map((l) => (
           <label class="cursor-pointer">
             <input type="checkbox" class="sr-only peer facet-level" value={l} />
-            <span class="inline-flex items-center rounded-full border border-ink-200 bg-white px-2.5 py-1 text-xs font-medium text-ink-700 peer-checked:bg-accent peer-checked:text-white peer-checked:border-accent peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-accent">
+            <span class="inline-flex items-center rounded-full border-[1.5px] border-ink-200 bg-white px-3 py-1 text-xs font-semibold text-ink-600 transition-all peer-checked:bg-blue-50 peer-checked:text-accent peer-checked:border-accent peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-accent">
               {LEVEL_LABELS[l]}
             </span>
           </label>
@@ -53,7 +53,7 @@ import { CATEGORIES, LEVELS, LEVEL_LABELS } from '../lib/categories';
     </fieldset>
   </div>
 
-  <div class="mt-4 text-xs text-ink-500" id="search-meta" aria-live="polite"></div>
+  <div class="mt-4 text-xs text-ink-400 font-medium" id="search-meta" aria-live="polite"></div>
 </section>
 
 <div id="search-results" class="mt-6 grid gap-3 sm:grid-cols-2" aria-live="polite"></div>
@@ -102,33 +102,33 @@ import { CATEGORIES, LEVELS, LEVEL_LABELS } from '../lib/categories';
   }
 
   function renderCard(doc: SearchDoc): string {
-    const levelClass: Record<string, string> = {
-      basico: 'border-emerald-200 bg-emerald-50 text-emerald-800',
-      intermedio: 'border-amber-200 bg-amber-50 text-amber-800',
-      avanzado: 'border-rose-200 bg-rose-50 text-rose-800',
+    const levelStyle: Record<string, string> = {
+      basico: 'border-color:#a7f3d0;background:#ecfdf6;color:#059669',
+      intermedio: 'border-color:#bfdbfe;background:#eff6ff;color:#2563eb',
+      avanzado: 'border-color:#c4b5fd;background:#f5f3ff;color:#7c3aed',
     };
-    const lvl = levelClass[doc.level] ?? 'border-ink-200 bg-ink-50 text-ink-700';
+    const lvlStyle = levelStyle[doc.level] ?? 'border-color:#e0e2ef;background:#f2f3f8;color:#6b7394';
     const isTechnique = doc.type === 'technique';
     const typeBadge = isTechnique
-      ? '<span class="inline-flex items-center rounded-full border border-accent/30 bg-accent/10 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-accent">Técnica</span>'
-      : '<span class="inline-flex items-center rounded-full border border-ink-200 bg-white px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-ink-700">Prompt</span>';
+      ? '<span style="display:inline-flex;align-items:center;border-radius:20px;border:1px solid #12172b;background:#12172b;color:#fff;padding:3px 9px;font-size:10.5px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase">Técnica</span>'
+      : '<span style="display:inline-flex;align-items:center;border-radius:20px;border:1px solid #f59e0b;background:#f59e0b;color:#fff;padding:3px 9px;font-size:10.5px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase">Prompt</span>';
     const secondaryBadge = isTechnique || !doc.category
       ? ''
-      : `<span class="inline-flex items-center rounded-full border border-ink-200 bg-ink-50 px-2.5 py-0.5 text-xs font-medium text-ink-700">${escapeHtml(getCategoryLabel(doc.category))}</span>`;
+      : `<span style="display:inline-flex;align-items:center;border-radius:20px;border:1px solid #e0e2ef;background:#f2f3f8;color:#6b7394;padding:3px 10px;font-size:11px;font-weight:500">${escapeHtml(getCategoryLabel(doc.category))}</span>`;
     const href = isTechnique
       ? `${baseNormalized}tecnicas/${encodeURIComponent(doc.slug)}/`
       : `${baseNormalized}prompts/${encodeURIComponent(doc.slug)}/`;
     return `
-      <article class="group rounded border border-ink-200 bg-white p-4 hover:border-ink-400 transition-colors">
-        <div class="flex flex-wrap items-center gap-2 mb-2">
+      <article class="group rounded-xl border border-[#e0e2ef] bg-white p-5 hover:border-[#c8cce0] hover:-translate-y-0.5 hover:shadow-lg transition-all duration-150" style="cursor:pointer" onclick="location.href='${href}'">
+        <div style="display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-bottom:10px">
           ${typeBadge}
           ${secondaryBadge}
-          <span class="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium ${lvl}">${escapeHtml(LEVEL_LABELS[doc.level as Level] ?? doc.level)}</span>
+          <span style="display:inline-flex;align-items:center;border-radius:20px;border:1.5px solid;padding:3px 10px;font-size:10.5px;font-weight:700;letter-spacing:0.04em;${lvlStyle}">${escapeHtml(LEVEL_LABELS[doc.level as Level] ?? doc.level)}</span>
         </div>
-        <h3 class="text-lg font-semibold leading-snug mb-1.5">
-          <a href="${href}" class="text-ink-900 no-underline group-hover:underline underline-offset-2">${escapeHtml(doc.title)}</a>
+        <h3 style="font-size:14.5px;font-weight:700;line-height:1.3;margin-bottom:6px;letter-spacing:-0.01em">
+          <a href="${href}" style="color:#1a1f35;text-decoration:none">${escapeHtml(doc.title)}</a>
         </h3>
-        <p class="text-sm text-ink-600 leading-relaxed">${escapeHtml(doc.summary)}</p>
+        <p style="font-size:13px;color:#6b7394;line-height:1.6">${escapeHtml(doc.summary)}</p>
       </article>
     `;
   }

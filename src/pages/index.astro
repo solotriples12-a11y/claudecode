@@ -4,14 +4,8 @@ import SearchBox from '../components/SearchBox.astro';
 ---
 
 <BaseLayout title="PromptHub" description="Biblioteca curada de prompts para consultores.">
-  <section class="mb-6 sm:mb-8">
-    <p class="text-xs font-semibold uppercase tracking-wider text-ink-500 mb-1">Herramienta interna</p>
-    <h1 class="text-3xl sm:text-4xl font-bold text-ink-900 leading-tight mb-2">PromptHub</h1>
-    <p class="text-ink-600 max-w-prose leading-relaxed">
-      Biblioteca curada de prompts para consultores. Cada prompt incluye un
-      checklist de revisión para ayudarte a validar la salida antes de
-      compartirla con cliente.
-    </p>
-  </section>
-  <SearchBox />
+  <h1 class="sr-only">PromptHub — Búsqueda de prompts y técnicas</h1>
+  <div class="pt-8 sm:pt-10 pb-2">
+    <SearchBox />
+  </div>
 </BaseLayout>

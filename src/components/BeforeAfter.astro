@@ -3,28 +3,100 @@ interface Props {
   without: string;
   with: string;
   observation: string;
+  level?: 'basico' | 'intermedio' | 'avanzado';
 }
 
-const { without, with: withTechnique, observation } = Astro.props;
+const { without, with: withTechnique, observation, level = 'intermedio' } = Astro.props;
+
+const afterStyles: Record<string, { bg: string; border: string; title: string; iconColor: string }> = {
+  basico: {
+    bg: 'bg-emerald-50',
+    border: 'border-emerald-200',
+    title: 'text-emerald-700',
+    iconColor: '#059669',
+  },
+  intermedio: {
+    bg: 'bg-blue-50',
+    border: 'border-blue-200',
+    title: 'text-blue-700',
+    iconColor: '#2563eb',
+  },
+  avanzado: {
+    bg: 'bg-violet-50',
+    border: 'border-violet-200',
+    title: 'text-violet-700',
+    iconColor: '#7c3aed',
+  },
+};
+
+const ls = afterStyles[level] ?? afterStyles.intermedio;
 ---
 
 <section aria-label="Ejemplo antes y después" class="space-y-3">
   <div class="grid gap-3 lg:grid-cols-2">
-    <div class="rounded border border-rose-200 bg-rose-50/40 p-4">
-      <h3 class="text-xs font-semibold uppercase tracking-wider text-rose-900 mb-2 flex items-center gap-1.5">
-        <span aria-hidden="true">—</span> Sin la técnica
-      </h3>
-      <pre class="whitespace-pre-wrap break-words text-sm text-ink-800 leading-relaxed font-mono">{without}</pre>
+    <!-- Sin la técnica: gray, muted -->
+    <div class="rounded-xl border border-ink-200 bg-[#f6f7fb] p-5">
+      <div class="flex items-center gap-2 mb-4">
+        <span class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-red-100 border border-red-200" aria-hidden="true">
+          <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="#f87171" stroke-width="3"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </span>
+        <span class="text-[10.5px] font-bold uppercase tracking-widest text-ink-400">Sin la técnica</span>
+      </div>
+      <pre class="whitespace-pre-wrap break-words text-[12.5px] text-ink-400 leading-relaxed font-mono">{without}</pre>
     </div>
-    <div class="rounded border border-emerald-200 bg-emerald-50/40 p-4">
-      <h3 class="text-xs font-semibold uppercase tracking-wider text-emerald-900 mb-2 flex items-center gap-1.5">
-        <span aria-hidden="true">+</span> Con la técnica
-      </h3>
-      <pre class="whitespace-pre-wrap break-words text-sm text-ink-800 leading-relaxed font-mono">{withTechnique}</pre>
+
+    <!-- Con la técnica: level-tinted -->
+    <div class:list={['rounded-xl border p-5', ls.bg, ls.border]}>
+      <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center gap-2">
+          <span class="inline-flex items-center justify-center w-5 h-5 rounded-full" aria-hidden="true"
+            style={`background: ${ls.iconColor}20; border: 1px solid ${ls.iconColor}50`}>
+            <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke={ls.iconColor} stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg>
+          </span>
+          <span class:list={['text-[10.5px] font-bold uppercase tracking-widest', ls.title]}>Con la técnica</span>
+        </div>
+        <button
+          class="copy-ba-btn inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-md border transition-all duration-150"
+          style={`color: ${ls.iconColor}; border-color: ${ls.iconColor}40; background: rgba(255,255,255,0.7)`}
+          data-text={withTechnique}
+          aria-label="Copiar prompt con la técnica"
+        >
+          <svg class="copy-icon" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+          <svg class="check-icon hidden" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg>
+          <span class="copy-label">Copiar</span>
+        </button>
+      </div>
+      <pre class="whitespace-pre-wrap break-words text-[12px] text-ink-800 leading-[1.8] font-mono">{withTechnique}</pre>
     </div>
   </div>
-  <div class="rounded border border-ink-200 bg-ink-50 p-3 text-sm text-ink-700 leading-relaxed">
+
+  <!-- Observación -->
+  <div class="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-ink-700 leading-relaxed">
     <strong class="font-semibold text-ink-900">Qué cambia:</strong>
-    {observation}
+    {' '}{observation}
   </div>
 </section>
+
+<script>
+  document.querySelectorAll<HTMLButtonElement>('.copy-ba-btn').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      const text = btn.dataset.text ?? '';
+      const copyIcon = btn.querySelector<SVGElement>('.copy-icon');
+      const checkIcon = btn.querySelector<SVGElement>('.check-icon');
+      const label = btn.querySelector<HTMLElement>('.copy-label');
+      try {
+        await navigator.clipboard.writeText(text);
+        copyIcon?.classList.add('hidden');
+        checkIcon?.classList.remove('hidden');
+        if (label) label.textContent = 'Copiado';
+        setTimeout(() => {
+          copyIcon?.classList.remove('hidden');
+          checkIcon?.classList.add('hidden');
+          if (label) label.textContent = 'Copiar';
+        }, 2000);
+      } catch {
+        // fallback silencioso
+      }
+    });
+  });
+</script>
