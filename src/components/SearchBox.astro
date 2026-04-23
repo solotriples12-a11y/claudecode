@@ -60,6 +60,25 @@ import { CATEGORIES, LEVELS, LEVEL_LABELS } from '../lib/categories';
 <p id="search-empty" class="mt-6 hidden text-ink-600">
   No hay resultados para esa búsqueda. Prueba con otros términos o quita algún filtro.
 </p>
+<nav id="search-pagination" class="mt-6 hidden items-center justify-between gap-3" aria-label="Paginación de resultados">
+  <button
+    id="search-prev"
+    type="button"
+    class="inline-flex items-center gap-1.5 rounded-lg border-[1.5px] border-ink-200 bg-white px-3.5 py-2 text-xs font-bold text-ink-700 transition-colors hover:border-accent hover:text-accent disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-ink-200 disabled:hover:text-ink-700"
+  >
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+    Anterior
+  </button>
+  <span id="search-page-info" class="text-xs font-semibold text-ink-600"></span>
+  <button
+    id="search-next"
+    type="button"
+    class="inline-flex items-center gap-1.5 rounded-lg border-[1.5px] border-ink-200 bg-white px-3.5 py-2 text-xs font-bold text-ink-700 transition-colors hover:border-accent hover:text-accent disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-ink-200 disabled:hover:text-ink-700"
+  >
+    Siguiente
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg>
+  </button>
+</nav>
 
 <script>
   import MiniSearch from 'minisearch';
@@ -71,6 +90,10 @@ import { CATEGORIES, LEVELS, LEVEL_LABELS } from '../lib/categories';
   const resultsEl = document.getElementById('search-results');
   const emptyEl = document.getElementById('search-empty');
   const metaEl = document.getElementById('search-meta');
+  const paginationEl = document.getElementById('search-pagination');
+  const prevBtn = document.getElementById('search-prev') as HTMLButtonElement | null;
+  const nextBtn = document.getElementById('search-next') as HTMLButtonElement | null;
+  const pageInfoEl = document.getElementById('search-page-info');
   const categoryCheckboxes = Array.from(
     document.querySelectorAll<HTMLInputElement>('.facet-category'),
   );
@@ -78,9 +101,11 @@ import { CATEGORIES, LEVELS, LEVEL_LABELS } from '../lib/categories';
     document.querySelectorAll<HTMLInputElement>('.facet-level'),
   );
 
-  if (!input || !resultsEl || !emptyEl || !metaEl) {
+  if (!input || !resultsEl || !emptyEl || !metaEl || !paginationEl || !prevBtn || !nextBtn || !pageInfoEl) {
     throw new Error('SearchBox: missing DOM nodes');
   }
+
+  const PAGE_SIZE = 6;
 
   const BASE = import.meta.env.BASE_URL;
   const baseNormalized = BASE.endsWith('/') ? BASE : `${BASE}/`;
@@ -137,6 +162,7 @@ import { CATEGORIES, LEVELS, LEVEL_LABELS } from '../lib/categories';
   let mini: MiniSearch<SearchDoc> | null = null;
   let lastQuery = '';
   let debounceTimer: number | undefined;
+  let currentPage = 1;
 
   function getSelectedFacets() {
     const categories = categoryCheckboxes.filter((c) => c.checked).map((c) => c.value);
@@ -166,31 +192,50 @@ import { CATEGORIES, LEVELS, LEVEL_LABELS } from '../lib/categories';
     const q = input!.value.trim();
     let results: SearchDoc[];
     if (q.length === 0) {
-      // Sin query: mostramos los 6 más recientes por reviewedAt.
+      // Sin query: lista completa ordenada por reviewedAt desc.
       results = [...docs].sort((a, b) => b.reviewedAt.localeCompare(a.reviewedAt));
     } else {
       const hits = mini.search(q, SEARCH_CONFIG.searchOptions);
       results = hits.map((h) => docs.find((d) => d.id === h.id)!).filter(Boolean);
     }
     results = filterByFacets(results);
-    const limited = q.length === 0 ? results.slice(0, 6) : results;
 
-    if (limited.length === 0) {
+    const total = results.length;
+    const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+    if (currentPage > totalPages) currentPage = totalPages;
+    if (currentPage < 1) currentPage = 1;
+    const start = (currentPage - 1) * PAGE_SIZE;
+    const pageItems = results.slice(start, start + PAGE_SIZE);
+
+    if (total === 0) {
       resultsEl!.innerHTML = '';
       emptyEl!.classList.remove('hidden');
       metaEl!.textContent = '0 resultados';
+      paginationEl!.classList.add('hidden');
+      paginationEl!.classList.remove('flex');
     } else {
       emptyEl!.classList.add('hidden');
-      resultsEl!.innerHTML = limited.map(renderCard).join('');
-      metaEl!.textContent =
-        q.length === 0
-          ? `Mostrando los ${limited.length} más recientes`
-          : `${limited.length} resultado${limited.length === 1 ? '' : 's'} para "${q}"`;
+      resultsEl!.innerHTML = pageItems.map(renderCard).join('');
+      const countLabel = q.length === 0
+        ? `${total} ${total === 1 ? 'recurso disponible' : 'recursos disponibles'}`
+        : `${total} resultado${total === 1 ? '' : 's'} para "${q}"`;
+      metaEl!.textContent = countLabel;
+
+      if (totalPages > 1) {
+        paginationEl!.classList.remove('hidden');
+        paginationEl!.classList.add('flex');
+        pageInfoEl!.textContent = `Página ${currentPage} de ${totalPages}`;
+        prevBtn!.disabled = currentPage <= 1;
+        nextBtn!.disabled = currentPage >= totalPages;
+      } else {
+        paginationEl!.classList.add('hidden');
+        paginationEl!.classList.remove('flex');
+      }
     }
 
     if (q.length > 0 && q !== lastQuery) {
       lastQuery = q;
-      trackEvent('search_performed', { q, hits: limited.length });
+      trackEvent('search_performed', { q, hits: total });
     }
   }
 
@@ -206,10 +251,31 @@ import { CATEGORIES, LEVELS, LEVEL_LABELS } from '../lib/categories';
 
   input.addEventListener('input', () => {
     window.clearTimeout(debounceTimer);
-    debounceTimer = window.setTimeout(render, 80);
+    debounceTimer = window.setTimeout(() => {
+      currentPage = 1;
+      render();
+    }, 80);
   });
 
-  [...categoryCheckboxes, ...levelCheckboxes].forEach((c) => c.addEventListener('change', render));
+  [...categoryCheckboxes, ...levelCheckboxes].forEach((c) =>
+    c.addEventListener('change', () => {
+      currentPage = 1;
+      render();
+    }),
+  );
+
+  prevBtn.addEventListener('click', () => {
+    if (currentPage <= 1) return;
+    currentPage -= 1;
+    render();
+    resultsEl!.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+
+  nextBtn.addEventListener('click', () => {
+    currentPage += 1;
+    render();
+    resultsEl!.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
 
   loadDocs()
     .then((loaded) => {
